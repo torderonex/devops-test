@@ -1,0 +1,40 @@
+---
+- name: Install Python 3 and pip
+  apt:
+    name: ["python3", "python3-pip", "python3-dev", "libffi-dev", "gcc", "libssl-dev"]
+    state: present
+    update_cache: yes
+
+- name: Install Docker module
+  pip:
+    name: docker
+    state: latest
+    executable: pip3
+
+- name: Login to Registry
+  docker_login:
+    username: "{{ username }}"
+    password: "{{ password }}" 
+    reauthorize: yes
+
+- name: Run 3 containers
+  docker_container:
+    name: "webapp_{{ item }}"
+    image: "{{ docker_image }}"
+    ports: 
+      - "808{{ item }}:8000"  
+    env:
+      AUTHOR: "{{ author_name }}"
+    restart_policy: always
+  loop: [1, 2, 3]
+
+- name: Install Nginx
+  apt:
+    name: nginx
+    state: present
+
+- name: Configure Nginx load balancer
+  template:
+    src: nginx.conf.j2
+    dest: /etc/nginx/nginx.conf
+  notify: restart nginx

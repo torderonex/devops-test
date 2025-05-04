@@ -1,0 +1,24 @@
+---
+- name: Deploy full application stack
+  hosts: all
+  become: true
+  
+  vars:
+    author_name: "Egor Sukahnov" 
+    username: "{{ lookup('env', 'USERNAME') | default('torderonex', true) }}"  
+    password: "{{ lookup('env', 'PASSWORD') | default('password', true) }}"
+    docker_image: "{{ username }}/echo-app:latest"  
+    ansible_python_interpreter: "/usr/bin/python3"
+
+  tasks:
+    - name: Include Docker installation
+      include_tasks: docker-install.yml
+
+    - name: Include application deployment
+      include_tasks: app-deploy.yml
+
+  handlers:
+    - name: restart nginx
+      service:
+        name: nginx
+        state: restarted

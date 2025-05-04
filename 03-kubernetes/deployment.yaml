@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: echo-server
+  namespace: echo-ns
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: echo-server
+  template:
+    metadata:
+      labels:
+        app: echo-server
+    spec:
+      imagePullSecrets:
+      - name: dockerhub-creds
+      containers:
+      - name: echo-server
+        image: torderone/echo-app:latest 
+        ports:
+        - containerPort: 8000
+        env:
+        - name: AUTHOR
+          value: "Egor Sukhanov"  
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8000
+          initialDelaySeconds: 2
+          periodSeconds: 5
+      imagePullSecrets:
+      - name: dockerhub-creds 
